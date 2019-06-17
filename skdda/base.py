@@ -11,6 +11,7 @@ David Diaz-Vico, Jose R. Dorronsoro
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.neural_network import MLPRegressor
 
 
 def fisher_y(y):
@@ -32,13 +33,13 @@ class FisherTransformer(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    regressor: RegressorMixin
+    regressor: RegressorMixin, default=MLPRegressor()
          Scikit-learn RegressorMixin estimator. Use MLPRegressor to get a Deep
          Discriminant Analysis classifier.
 
     """
 
-    def __init__(self, regressor):
+    def __init__(self, regressor=MLPRegressor()):
         self.regressor = regressor
 
     def fit(self, X, y, **fit_params):
