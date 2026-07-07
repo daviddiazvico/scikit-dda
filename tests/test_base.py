@@ -19,7 +19,6 @@ from sklearn.utils.estimator_checks import check_estimator
 
 from skdda.base import FisherTransformer
 
-
 np.random.seed(0)
 
 
@@ -31,9 +30,13 @@ np.random.seed(0)
 def test_sklearn():
     """Tests general compatibility with Scikit-learn."""
     data = load_iris()
-    predictor = Pipeline([('StandardScaler', StandardScaler()),
-                          ('DeepDiscriminantAnalysis', FisherTransformer(MLPRegressor())),
-                          ('DummyClassifier', DummyClassifier())])
+    predictor = Pipeline(
+        [
+            ("StandardScaler", StandardScaler()),
+            ("DeepDiscriminantAnalysis", FisherTransformer(MLPRegressor())),
+            ("DummyClassifier", DummyClassifier()),
+        ]
+    )
     predictor.fit(data.data, data.target)
     preds = predictor.predict(data.data)
     assert isinstance(preds, np.ndarray)
@@ -44,17 +47,18 @@ def test_sklearn():
 def test_hyperparametersearchcv():
     """Tests compatibility with Scikit-learn's hyperparameter search CV."""
     data = load_iris()
-    for search, space in ((GridSearchCV,
-                           {'DeepDiscriminantAnalysis__regressor__alpha': [0.0,
-                                                                           0.5,
-                                                                           1.0]}),
-                          (RandomizedSearchCV,
-                           {'DeepDiscriminantAnalysis__regressor__alpha': uniform(0.0,
-                                                                                  1.0)})):
-        predictor = Pipeline([('StandardScaler', StandardScaler()),
-                              ('DeepDiscriminantAnalysis', FisherTransformer(MLPRegressor(max_iter=500))),
-                              ('DummyClassifier', DummyClassifier())])
-        predictor = search(predictor, space, cv=3, iid=True)
+    for search, space in (
+        (GridSearchCV, {"DeepDiscriminantAnalysis__regressor__alpha": [0.0, 0.5, 1.0]}),
+        (RandomizedSearchCV, {"DeepDiscriminantAnalysis__regressor__alpha": uniform(0.0, 1.0)}),
+    ):
+        predictor = Pipeline(
+            [
+                ("StandardScaler", StandardScaler()),
+                ("DeepDiscriminantAnalysis", FisherTransformer(MLPRegressor(max_iter=500))),
+                ("DummyClassifier", DummyClassifier()),
+            ]
+        )
+        predictor = search(predictor, space, cv=3)
         assert isinstance(predictor, search)
         predictor.fit(data.data, data.target)
         preds = predictor.predict(data.data)
@@ -66,10 +70,14 @@ def test_hyperparametersearchcv():
 def test_ensemble():
     """Tests compatibility with Scikit-learn's ensembles."""
     data = load_iris()
-    predictor = Pipeline([('StandardScaler', StandardScaler()),
-                          ('DeepDiscriminantAnalysis', FisherTransformer(MLPRegressor())),
-                          ('DummyClassifier', DummyClassifier())])
-    predictor = BaggingClassifier(base_estimator=predictor, n_estimators=3)
+    predictor = Pipeline(
+        [
+            ("StandardScaler", StandardScaler()),
+            ("DeepDiscriminantAnalysis", FisherTransformer(MLPRegressor())),
+            ("DummyClassifier", DummyClassifier()),
+        ]
+    )
+    predictor = BaggingClassifier(estimator=predictor, n_estimators=3)
     assert isinstance(predictor, BaggingClassifier)
     predictor.fit(data.data, data.target)
     assert len(predictor.estimators_) == 3
@@ -87,9 +95,13 @@ def test_ensemble():
 def test_serialization():
     """Tests serialization capability."""
     data = load_iris()
-    predictor = Pipeline([('StandardScaler', StandardScaler()),
-                          ('DeepDiscriminantAnalysis', FisherTransformer(MLPRegressor())),
-                          ('DummyClassifier', DummyClassifier())])
+    predictor = Pipeline(
+        [
+            ("StandardScaler", StandardScaler()),
+            ("DeepDiscriminantAnalysis", FisherTransformer(MLPRegressor())),
+            ("DummyClassifier", DummyClassifier()),
+        ]
+    )
     predictor.fit(data.data, data.target)
     serialized_predictor = pickle.dumps(predictor)
     deserialized_predictor = pickle.loads(serialized_predictor)
